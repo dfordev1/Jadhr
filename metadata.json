@@ -1,0 +1,5 @@
+{
+  "name": "Jadhr - Arabic Root Learning",
+  "description": "A brutal minimalistic and elegant Arabic root word learning application with Supabase auth, CSV/JSON upload, and progress analysis.",
+  "requestFramePermissions": []
+}
