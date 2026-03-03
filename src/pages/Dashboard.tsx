@@ -2,9 +2,10 @@ import { useData } from '../context/DataContext';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
 import { motion } from 'motion/react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { Flame } from 'lucide-react';
 
 export function Dashboard() {
-  const { roots, progress } = useData();
+  const { roots, progress, streak } = useData();
 
   const totalRoots = roots.length;
   const mastered = Object.values(progress).filter((p: any) => p.status === 'mastered').length;
@@ -28,8 +29,20 @@ export function Dashboard() {
         <p className="text-xl font-bold text-gray-400 uppercase tracking-widest">Your Progress</p>
       </motion.div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.1 }}>
+          <Card className="border-4 h-full bg-black text-white">
+            <CardHeader className="border-b-4 border-white/20 pb-4">
+              <CardTitle className="text-sm font-bold uppercase tracking-widest text-gray-400 flex items-center gap-2">
+                <Flame className="w-4 h-4 text-orange-500" /> Current Streak
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-6">
+              <div className="text-6xl font-black">{streak} <span className="text-2xl text-gray-400">Days</span></div>
+            </CardContent>
+          </Card>
+        </motion.div>
+        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2 }}>
           <Card className="border-4 h-full">
             <CardHeader className="border-b-4 pb-4">
               <CardTitle className="text-sm font-bold uppercase tracking-widest text-gray-500">Total Roots</CardTitle>
@@ -39,7 +52,7 @@ export function Dashboard() {
             </CardContent>
           </Card>
         </motion.div>
-        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2 }}>
+        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.3 }}>
           <Card className="border-4 h-full">
             <CardHeader className="border-b-4 pb-4">
               <CardTitle className="text-sm font-bold uppercase tracking-widest text-gray-500">Mastered</CardTitle>
@@ -49,7 +62,7 @@ export function Dashboard() {
             </CardContent>
           </Card>
         </motion.div>
-        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.3 }}>
+        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.4 }}>
           <Card className="border-4 h-full">
             <CardHeader className="border-b-4 pb-4">
               <CardTitle className="text-sm font-bold uppercase tracking-widest text-gray-500">Learning</CardTitle>
@@ -64,7 +77,7 @@ export function Dashboard() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.4 }}
+        transition={{ delay: 0.5 }}
       >
         <Card className="border-4">
           <CardHeader className="border-b-4">

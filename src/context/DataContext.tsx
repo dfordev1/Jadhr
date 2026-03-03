@@ -7,9 +7,11 @@ interface DataContextType {
   roots: ArabicRoot[];
   progress: Record<string | number, UserProgress>;
   loading: boolean;
+  streak: number;
   uploadRoots: (newRoots: ArabicRoot[]) => Promise<void>;
   updateProgress: (rootId: string | number, correct: boolean) => Promise<void>;
   clearData: () => Promise<void>;
+  recordActivity: () => void;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -19,8 +21,32 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const [roots, setRoots] = useState<ArabicRoot[]>([]);
   const [progress, setProgress] = useState<Record<string | number, UserProgress>>({});
   const [loading, setLoading] = useState(true);
+  const [streak, setStreak] = useState(0);
 
   useEffect(() => {
+    // Load streak from local storage (works across mock and real auth for simplicity)
+    const currentStreak = parseInt(localStorage.getItem('jadhr_streak') || '0', 10);
+    const lastActive = localStorage.getItem('jadhr_last_active');
+    
+    if (lastActive) {
+      const lastDate = new Date(lastActive);
+      const today = new Date();
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      
+      const lastDateStr = lastDate.toISOString().split('T')[0];
+      const todayStr = today.toISOString().split('T')[0];
+      const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+      if (lastDateStr !== todayStr && lastDateStr !== yesterdayStr) {
+        // Streak broken
+        setStreak(0);
+        localStorage.setItem('jadhr_streak', '0');
+      } else {
+        setStreak(currentStreak);
+      }
+    }
+
     if (!user) {
       setRoots([]);
       setProgress({});
@@ -37,7 +63,6 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
           if (localRoots) setRoots(JSON.parse(localRoots));
           if (localProgress) setProgress(JSON.parse(localProgress));
         } else {
-          // Load from Supabase
           const { data: rootsData, error: rootsError } = await supabase!
             .from('arabic_roots')
             .select('*');
@@ -68,10 +93,35 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     loadData();
   }, [user, isMock]);
 
+  const recordActivity = () => {
+    const today = new Date().toISOString().split('T')[0];
+    const lastActive = localStorage.getItem('jadhr_last_active');
+    let currentStreak = parseInt(localStorage.getItem('jadhr_streak') || '0', 10);
+
+    if (lastActive === today) return; // Already recorded today
+
+    if (lastActive) {
+      const lastDate = new Date(lastActive);
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      
+      if (lastDate.toISOString().split('T')[0] === yesterday.toISOString().split('T')[0]) {
+        currentStreak += 1;
+      } else {
+        currentStreak = 1;
+      }
+    } else {
+      currentStreak = 1;
+    }
+
+    localStorage.setItem('jadhr_last_active', today);
+    localStorage.setItem('jadhr_streak', currentStreak.toString());
+    setStreak(currentStreak);
+  };
+
   const uploadRoots = async (newRoots: ArabicRoot[]) => {
     if (isMock) {
       const merged = [...roots, ...newRoots];
-      // Deduplicate by id
       const unique = Array.from(new Map(merged.map(item => [item.id, item])).values());
       setRoots(unique);
       localStorage.setItem('mockRoots', JSON.stringify(unique));
@@ -79,7 +129,6 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       const { error } = await supabase!.from('arabic_roots').upsert(newRoots);
       if (error) throw error;
       
-      // Reload roots
       const { data } = await supabase!.from('arabic_roots').select('*');
       if (data) setRoots(data);
     }
@@ -122,14 +171,11 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       localStorage.removeItem('mockProgress');
       setRoots([]);
       setProgress({});
-    } else {
-      // In a real app, you might not want to delete from Supabase easily, 
-      // but we'll add it for completeness if needed.
     }
   };
 
   return (
-    <DataContext.Provider value={{ roots, progress, loading, uploadRoots, updateProgress, clearData }}>
+    <DataContext.Provider value={{ roots, progress, loading, streak, uploadRoots, updateProgress, clearData, recordActivity }}>
       {children}
     </DataContext.Provider>
   );
