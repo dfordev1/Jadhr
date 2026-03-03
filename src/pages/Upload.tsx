@@ -5,10 +5,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card'
 import { motion } from 'motion/react';
 import Papa from 'papaparse';
 import { ArabicRoot } from '../types';
-import { Upload as UploadIcon, FileJson, FileText, CheckCircle } from 'lucide-react';
+import { Upload as UploadIcon, FileJson, FileText, CheckCircle, Download } from 'lucide-react';
 
 export function Upload() {
-  const { uploadRoots } = useData();
+  const { uploadRoots, exportData } = useData();
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [success, setSuccess] = useState(false);
@@ -25,7 +25,6 @@ export function Upload() {
       if (file.name.endsWith('.json')) {
         const text = await file.text();
         const data = JSON.parse(text);
-        // Handle if it's an array directly or wrapped in an object
         const roots: ArabicRoot[] = Array.isArray(data) ? data : (data.roots || data.data || []);
         if (roots.length === 0) throw new Error('No valid roots found in JSON');
         await uploadRoots(roots);
@@ -74,9 +73,15 @@ export function Upload() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
+        className="flex flex-col md:flex-row md:items-baseline justify-between gap-4"
       >
-        <h1 className="text-6xl font-black uppercase tracking-tighter">Upload Data</h1>
-        <p className="text-xl font-bold text-gray-400 uppercase tracking-widest mt-2">Expand your dictionary</p>
+        <div>
+          <h1 className="text-5xl md:text-6xl font-black uppercase tracking-tighter">Data</h1>
+          <p className="text-lg md:text-xl font-bold text-gray-400 uppercase tracking-widest mt-2">Manage your dictionary</p>
+        </div>
+        <Button onClick={exportData} variant="outline" className="border-4 font-black uppercase tracking-widest h-12">
+          <Download className="w-5 h-5 mr-2" /> Export Backup
+        </Button>
       </motion.div>
 
       <motion.div
@@ -91,7 +96,7 @@ export function Upload() {
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-8">
-            <div className="border-4 border-dashed border-black p-12 flex flex-col items-center justify-center bg-gray-50 hover:bg-gray-100 transition-colors relative">
+            <div className="border-4 border-dashed border-black p-8 md:p-12 flex flex-col items-center justify-center bg-gray-50 hover:bg-gray-100 transition-colors relative">
               <input
                 type="file"
                 accept=".json,.csv"
@@ -100,13 +105,13 @@ export function Upload() {
                 disabled={loading}
               />
               <div className="flex gap-4 mb-4">
-                <FileJson className="w-12 h-12 text-black" />
-                <FileText className="w-12 h-12 text-black" />
+                <FileJson className="w-10 h-10 md:w-12 md:h-12 text-black" />
+                <FileText className="w-10 h-10 md:w-12 md:h-12 text-black" />
               </div>
-              <p className="text-2xl font-black uppercase text-center mb-2">
+              <p className="text-xl md:text-2xl font-black uppercase text-center mb-2">
                 {loading ? 'Processing...' : 'Click or Drag File'}
               </p>
-              <p className="text-sm font-bold uppercase tracking-widest text-gray-500">
+              <p className="text-xs md:text-sm font-bold uppercase tracking-widest text-gray-500">
                 Supports JSON and CSV
               </p>
             </div>
@@ -115,11 +120,11 @@ export function Upload() {
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className={`mt-6 p-4 border-4 font-bold uppercase flex items-center gap-3 ${
+                className={`mt-6 p-4 border-4 font-bold uppercase flex items-center gap-3 text-sm md:text-base ${
                   success ? 'bg-black text-white border-black' : 'bg-red-100 text-red-900 border-red-900'
                 }`}
               >
-                {success && <CheckCircle className="w-6 h-6" />}
+                {success && <CheckCircle className="w-6 h-6 flex-shrink-0" />}
                 {message}
               </motion.div>
             )}
