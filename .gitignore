@@ -13,4 +13,5 @@ android/.gradle/
 android/local.properties
 android/capacitor-cordova-android-plugins/build/
 android/capacitor-android/build/
-*.apk
+# Exclude build APKs but keep release copies at root
+android/app/build/outputs/
